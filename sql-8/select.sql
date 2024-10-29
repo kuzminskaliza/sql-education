@@ -49,3 +49,27 @@ WHERE (quantity > 10 OR price < 500);
 SELECT t.name, t.price
 FROM product as t
 WHERE t.category = 'Literature';
+
+SELECT *
+FROM product
+WHERE category IN ('Electronics', 'Literature', 'Cosmetics');
+
+SELECT *
+FROM product
+WHERE category NOT IN ('Electronics', 'Literature');
+
+SELECT *
+FROM product
+WHERE price < ANY (ARRAY[1000, 2000, 3000]);
+
+SELECT *
+FROM product
+WHERE price IS NULL;
+
+SELECT *
+FROM product
+WHERE price IS NOT NULL;
+
+SELECT *
+FROM product
+WHERE price BETWEEN 1000 AND 20000;
