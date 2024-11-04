@@ -1,19 +1,25 @@
+CREATE TYPE gender_enum AS ENUM ('male', 'female');
+
 CREATE TABLE students
 (
     id         SERIAL PRIMARY KEY,
-    first_name VARCHAR(50) NOT NULL,
-    last_name  VARCHAR(50) NOT NULL,
-    age        INTEGER CHECK ( age > 0 ),
-    course     INTEGER CHECK ( course > 0 ),
-    gender     VARCHAR(10) CHECK ( gender IN ('male', 'female'))
+    first_name VARCHAR(255) NOT NULL,
+    last_name  VARCHAR(255) NOT NULL,
+    age        INTEGER      NOT NULL,
+    course     INTEGER      NOT NULL,
+    gender     gender_enum  NOT NULL,
+    created_at timestamp(0) default CURRENT_TIMESTAMP,
+    updated_at timestamp(0) default NULL::timestamp without time zone
 );
 
 CREATE TABLE subjects
 (
     id                 SERIAL PRIMARY KEY,
-    subject_name       VARCHAR(100) NOT NULL,
-    teacher_first_name VARCHAR(50)  NOT NULL,
-    teacher_last_name  VARCHAR(50)  NOT NULL
+    subject_name       VARCHAR(255) NOT NULL,
+    teacher_first_name VARCHAR(255) NOT NULL,
+    teacher_last_name  VARCHAR(255) NOT NULL,
+    created_at         timestamp(0) default CURRENT_TIMESTAMP,
+    updated_at         timestamp(0) default NULL::timestamp without time zone
 );
 
 CREATE TABLE schedule
@@ -21,7 +27,9 @@ CREATE TABLE schedule
     id         SERIAL PRIMARY KEY,
     student_id INTEGER NOT NULL,
     subject_id INTEGER NOT NULL,
-    grade      INTEGER CHECK ( grade BETWEEN 1 AND 100)
+    grade      SMALLINT,
+    created_at timestamp(0) default CURRENT_TIMESTAMP,
+    updated_at timestamp(0) default NULL::timestamp without time zone
 );
 
 INSERT INTO students (first_name, last_name, age, course, gender)
@@ -217,10 +225,10 @@ VALUES (1, 1, 52),
        (99, 10, 63),
        (100, 3, 68);
 
-
 UPDATE students
-SET last_name = 'Davios'
-WHERE id = 2;
+SET last_name  = 'Davios',
+    updated_at = CURRENT_TIMESTAMP
+WHERE gender = 'female';
 
 SELECT subjects.teacher_first_name, teacher_last_name
 FROM subjects;
@@ -235,7 +243,7 @@ WHERE course = 1
 
 SELECT students.last_name, first_name
 FROM students
-WHERE course = 4
+WHERE course = (SELECT MAX(course) FROM students)
   AND gender = 'male';
 
 SELECT *
@@ -243,9 +251,21 @@ FROM students
 WHERE age IN (18, 19, 20);
 
 SELECT *
-FROM schedule
-WHERE grade >= 90;
+FROM students
+WHERE id IN (SELECT student_id
+             FROM schedule
+             WHERE grade >= 90);
+
 
 SELECT *
-FROM schedule
-WHERE grade <= 60;
+FROM students
+WHERE id IN (SELECT student_id
+             FROM schedule
+             WHERE grade <= 60);
+
+
+SELECT teacher_first_name
+FROM subjects
+WHERE id IN (SELECT subject_id
+             FROM schedule
+             WHERE grade >= 80)
